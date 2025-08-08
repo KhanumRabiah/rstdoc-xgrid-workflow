@@ -51,7 +51,7 @@ There are options to post-process through::
 To convert more DOCX documents into the same
 RST documentation folder, proceed like this:
 
-- rename/copy the original DOCX to the name you want for the ``.rest`` file
+- rename/copy the original DOCX to the name you want for the ``.rst`` file
 - run ``rstfromdocx -lurg doc1.docx``; instead of -lurg use your own options
 - check the output in the ``doc1`` subfolder
 - repeat the previous 2 steps with the next DOCX files
@@ -134,11 +134,11 @@ def extract_media(adocx):
         os.chdir(pwd)
 
 
-def _docxrest(adocx):
-    # returns file name of ``.rest`` file.
+def _docxrst(adocx):
+    # returns file name of ``.rst`` file.
     _, frm = os.path.split(adocx)
     fnrst = os.path.splitext(frm)[0]
-    fnrst = os.path.join(_fldrhere(adocx), fnrst + '.rest')
+    fnrst = os.path.join(_fldrhere(adocx), fnrst + '.rst')
     return fnrst
 
 
@@ -160,10 +160,10 @@ def _write_confpy(adocx):
 
 
 def _write_index(adocx):
-    # Adds a the generated .rest to ``toctree`` in index.rest or generates new index.rest.
+    # Adds a the generated .rst to ``toctree`` in index.rst or generates new index.rst.
     fnn = _fldrhere(adocx)
-    ifn = os.path.normpath(os.path.join(fnn, 'index.rest'))
-    rst = _rstname(adocx) + '.rest'
+    ifn = os.path.normpath(os.path.join(fnn, 'index.rst'))
+    rst = _rstname(adocx) + '.rst'
     prjname = _prj_name(adocx)
     hp = '=' * len(prjname)
     if os.path.exists(ifn):
@@ -270,7 +270,7 @@ def main(**args):
 
     adocx = args['docx']
     extract_media(adocx)
-    fnrst = _docxrest(adocx)
+    fnrst = _docxrst(adocx)
     rst = pypandoc.convert_file(adocx, 'rst', 'docx')
     with open(fnrst, 'w', encoding='utf-8', newline='\n') as f:
         f.write('.. vim: syntax=rst\n\n')
@@ -308,11 +308,11 @@ def docx_rst_5(docx ,rename ,sentence=True):
     '''
     Creates 5 rst files:
 
-    - without postprocessing: rename/rename.rest
-    - with listtable postprocessing: rename/rename_l.rest
-    - with untable postprocessing: rename/rename_u.rest
-    - with reflow postprocessing: rename/rename_r.rest
-    - with reimg postprocessing: rename/rename_g.rest
+    - without postprocessing: rename/rename.rst
+    - with listtable postprocessing: rename/rename_l.rst
+    - with untable postprocessing: rename/rename_u.rst
+    - with reflow postprocessing: rename/rename_r.rst
+    - with reimg postprocessing: rename/rename_g.rst
 
     :param docx: the docx file name
     :param rename: the new name to give to the converted files (no extension)
@@ -323,14 +323,14 @@ def docx_rst_5(docx ,rename ,sentence=True):
     shutil.copy2(docx, rename + ".docx")
     rstfn = main(docx=rename + ".docx")
     r, _ = os.path.splitext(rstfn)
-    shutil.copy2(rstfn, r + '_l.rest')
-    listtable(rstfile=r + '_l.rest', in_place=True)
-    shutil.copy2(r + '_l.rest', r + '_u.rest')
-    untable(rstfile=r + '_u.rest', in_place=True)
-    shutil.copy2(r + '_u.rest', r + '_r.rest')
-    reflow(rstfile=r + '_r.rest', in_place=True, sentence=sentence)
-    shutil.copy2(r + '_r.rest', r + '_g.rest')
-    reimg(rstfile=r + '_g.rest', in_place=True)
+    shutil.copy2(rstfn, r + '_l.rst')
+    listtable(rstfile=r + '_l.rst', in_place=True)
+    shutil.copy2(r + '_l.rst', r + '_u.rst')
+    untable(rstfile=r + '_u.rst', in_place=True)
+    shutil.copy2(r + '_u.rst', r + '_r.rst')
+    reflow(rstfile=r + '_r.rst', in_place=True, sentence=sentence)
+    shutil.copy2(r + '_r.rst', r + '_g.rst')
+    reimg(rstfile=r + '_g.rst', in_place=True)
 
 
 if __name__ == '__main__':
