@@ -15,7 +15,7 @@ import difflib
 import re
 import os
 from rstdoc import __version__
-
+import posixpath # to fix the backslash issue
 
 """
 .. _`rstreimg`:
@@ -96,7 +96,8 @@ def reimg(data, prefix):
         if oldp not in chfilemap:
             i = i + 1
             newn = prefix + '{:03}'.format(i) + os.path.splitext(f)[1]
-            newp = os.path.join(d, newn)
+            #newp = os.path.join(d, newn)
+            newp = posixpath.join(d, newn) # to fix the backslash issue
             chfilemap[oldp] = newp
     for oldp, newp in chfilemap.items():
         try:
