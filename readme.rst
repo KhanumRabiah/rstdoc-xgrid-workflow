@@ -1,51 +1,22 @@
-=================================
-rstdoc(1) Version 1.8.2 \| rstdoc
-=================================
+==================================
+rstdoc-xgrid-project Version 1.8.4 
+==================================
 
-See `background and documentation <https://rstdoc.readthedocs.io/en/latest/>`__.
+---------------------
+Xgrid's Version 1.0.0
+---------------------
 
-Many companies use `DOCX <http://www.ecma-international.org/publications/standards/Ecma-376.htm>`_
-and thus produce an information barrier.
-Working with text is more integrated in the (software) development process.
-A final format can be `DOCX`_, but, at least during development, text is better.
+This is the modified version of the original open-source `rstdoc <https://github.com/rstdoc/rstdoc>`_ python library, modified to suit the company's internal documentation needs.
 
-`Sphinx <http://www.sphinx-doc.org/en/stable/>`__
-is an extension of `Docutils <http://docutils.sourceforge.net/>`__
-used for many (software) projects,
-but it does not support creation of `DOCX`_ files, which certain companies demand.
-`Pandoc <https://pandoc.org/>`__
-does support `DOCX`_, but does not support the Sphinx extensions,
-hence ``:ref:`` and the like cannot be used.
+Notes 
+*****
 
-This python package supports working with
-`RST <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_
-as documentation format without depending on Sphinx.
+* See `Original background and documentation <https://rstdoc.readthedocs.io/en/latest/>`__.
 
-- link RST documents using 
-  `substitutions <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html#substitution-definitions>`__
-  (generated in ``_links_xxx.r?st``)
-- create a ``.tags`` file to jump around in an editor that support 
-  `ctags <http://ctags.sourceforge.net/FORMAT>`__
-- `RST`_ handling with python: reformat/create `RST`_ tables
-- post-process Pandoc's conversion from `DOCX`_ to `RST`_
-- pre-process Pandoc's conversion from `RST`_ to `DOCX`_
-- Support in building with `WAF <https://github.com/waf-project/waf>`_ (or ``Makefile``)
+* This python package supports working with `RST <http://docutils.sourceforge.net/docs/ref/rst/restructuredtext.html>`_ as documentation format without depending on Sphinx.
 
-  - expand
-    `SimpleTemplate <https://bottlepy.org/docs/dev/stpl.html#simpletemplate-syntax>`_
-    template files ``.stpl``
-  - graphics files (``.tikz``, ``.svg``, ``.dot``,  ``.uml``, ``.eps`` or ``.stpl`` thereof, and ``.pyg``)
-    are converted to ``.png``
-    and placed into ``./_images`` or ``<updir>/_images``, if there, else into current directory.
-  - a ``gen`` file specifies how `RST`_ should be generated from source code files (see ``dcx.py``)
 
-The conventions used are shown
-
-- by the example produced via ``rstdcx --rest/--stpl/--over/--ipdt smplfldr``
-- by the documentation sources that can be found at
-  https://github.com/rstdoc/rstdoc/tree/master/doc
-
-``pip install rstdoc`` installs:
+* ``pip install rstdoc`` installs:
 
 +-----------+-------------------+--------------------------------------------+
 | Module    | CLI Script        | Description                                |
