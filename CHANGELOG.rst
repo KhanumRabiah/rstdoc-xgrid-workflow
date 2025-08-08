@@ -2,12 +2,17 @@
 CHANGELOG
 =========
 
-TODO
-====
+20230122 - v1.8.3
+=================
 
-- use docutils make_id() to create the external target in the _links_xxx.rst files
+Changes made are:
 
-- test tags on vscode, and add to docs
+.. TODO
+.. ====
+
+.. - use docutils make_id() to create the external target in the _links_xxx.rst files
+
+.. - test tags on vscode, and add to docs
 
 
 20230122 - v1.8.2
