@@ -205,14 +205,6 @@ def _write_makefile(adocx):
     with open(mffn, 'w', encoding='utf-8') as f:
         f.writelines(lns)
 
-
-def _write_dcx(adocx):
-    # Writes the dcx.py into the folder generated for the docx.
-    dcxfile = os.path.join(
-        os.path.split(str(Path(__file__).resolve()))[0], 'dcx.py')
-    shutil.copy2(dcxfile, _fldrhere(adocx))
-
-
 def main(**args):
     '''
     This corresponds to the |rstfromdocx| shell command.
@@ -278,7 +270,6 @@ def main(**args):
     _write_confpy(adocx)
     _write_index(adocx)
     _write_makefile(adocx)
-    _write_dcx(adocx)
 
     if 'listtable' not in args:
         args['listtable'] = False
