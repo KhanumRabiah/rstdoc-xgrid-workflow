@@ -671,7 +671,7 @@ def name_from_directive(directive, count):
 config_defaults = {
     'project': 'Project',
     'author': 'Project Team',
-    'copyright': '2019, Project Team',
+    'copyright': '2025, Project Team',
     'version': '1.0',
     'release': '1.0.0',
     'html_theme': 'bootstrap',
@@ -4258,7 +4258,7 @@ example_rest_tree = r'''
        conf.py
          project = 'sample'
          author = project+' Project Team'
-         copyright = '2019, '+author
+         copyright = '2025, '+author
          version = '1.0'
          release = '1.0.0'
          try:
@@ -4270,7 +4270,7 @@ example_rest_tree = r'''
          #these are enforced by rstdoc, but keep them for sphinx-build
          numfig = 0
          smartquotes = 0
-         source_suffix = '.rest'
+         source_suffix = '.rst'
          templates_path = []
          language = None
          highlight_language = "none"
@@ -5461,7 +5461,7 @@ example_ipdt_tree = r'''
          ├ conf.py
              project = 'PDT'
              author = project+' Project Team'
-             copyright = '2019, '+author
+             copyright = '2025, '+author
              version = '0.0.0'
              release = version
              try:
@@ -5473,7 +5473,7 @@ example_ipdt_tree = r'''
              #these are enforced by rstdoc, but keep them for sphinx-build
              numfig = 0
              smartquotes = 0
-             source_suffix = '.rest'
+             source_suffix = '.rst'
              templates_path = []
              language = None
              highlight_language = "none"
