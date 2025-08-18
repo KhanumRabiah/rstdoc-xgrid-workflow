@@ -24,6 +24,7 @@ import pypandoc
 from zipfile import ZipFile
 from rstdoc import __version__
 
+
 """
 .. _`rstfromdocx`:
 
@@ -205,18 +206,103 @@ def _write_makefile(adocx):
     with open(mffn, 'w', encoding='utf-8') as f:
         f.writelines(lns)
 
+## FOLLOWING FUNCTION CONVERTS NOTES ETC INTO THEIR RESPECTIVE DIRECTIVE
+
+import re
+
+def process_rst_admonitions(rst_text):
+    """
+    Correctly converts multi-line admonitions (e.g., "**Note**: ...") into
+    properly indented RST directives. This version is robust and handles
+    keywords that may be formatted with bold or italics by Pandoc.
+
+    Args:
+        rst_text (str): The input RST text generated from Pandoc.
+
+    Returns:
+        str: The processed RST text with correctly formatted multi-line directives.
+    """
+    directive_mappings = {
+        "note": "note",
+        "see also": "seealso", 
+        "attention": "attention",
+        "caution": "caution",
+        "error": "error",
+        "danger": "danger",
+        "hint": "hint",
+        "tip": "tip",
+        "important": "important",
+        "warning": "warning",
+    }
+
+    # More flexible regex pattern to match various formatting
+    keywords_pattern = "|".join(re.escape(key) for key in directive_mappings.keys())
+    
+    # Pattern explanation:
+    # ^\s* - optional whitespace at start of line
+    # [\*_]* - optional bold/italic markers before keyword
+    # ({keywords_pattern}) - capture the keyword
+    # [\*_]* - optional bold/italic markers after keyword  
+    # \s*:\s* - colon with optional whitespace
+    # (.*) - capture rest of line
+    pattern = re.compile(
+        rf"^\s*[\*_]*\s*({keywords_pattern})\s*[\*_]*\s*:\s*(.*)",
+        re.IGNORECASE
+    )
+
+    # Split into paragraphs but preserve empty lines
+    paragraphs = re.split(r'\n\s*\n', rst_text)
+    processed_paragraphs = []
+
+    for paragraph in paragraphs:
+        if not paragraph.strip():
+            processed_paragraphs.append(paragraph)
+            continue
+
+        lines = paragraph.split('\n')
+        first_line = lines[0].strip()
+        match = pattern.match(first_line)
+
+        if match:
+            # Extract the keyword and normalize it
+            keyword = match.group(1).lower().strip()
+            rest_of_first_line = match.group(2).strip()
+            
+            # Get the directive name
+            directive = directive_mappings.get(keyword, "note")
+
+            # Create the directive line
+            if rest_of_first_line:
+                # If there's content on the first line, include it
+                new_lines = [f".. {directive}:: {rest_of_first_line}"]
+            else:
+                # If no content on first line, just create the directive
+                new_lines = [f".. {directive}::"]
+            
+            # Process remaining lines with proper indentation
+            for line in lines[1:]:
+                if line.strip():  # Non-empty line
+                    new_lines.append(f"   {line.rstrip()}")
+                else:  # Empty line - preserve but with minimal indentation
+                    new_lines.append("   ")
+
+            processed_paragraphs.append('\n'.join(new_lines))
+        else:
+            # This paragraph is not a directive, leave unchanged
+            processed_paragraphs.append(paragraph)
+    
+    return '\n\n'.join(processed_paragraphs)
+
+##MODIFIED MAIN FUNC
+
 def main(**args):
     '''
     This corresponds to the |rstfromdocx| shell command.
 
     :param args: Keyword arguments. If empty the arguments are taken from ``sys.argv``.
-
     listtable, untable, reflow, reimg default to False.
-
     returns: The file name of the generated file.
-
     '''
-
     import argparse
 
     if not args:
@@ -263,38 +349,49 @@ def main(**args):
     adocx = args['docx']
     extract_media(adocx)
     fnrst = _docxrst(adocx)
+    
+    # Perform the standard Pandoc conversion
     rst = pypandoc.convert_file(adocx, 'rst', 'docx')
+
+    # Process admonitions (notes, warnings, etc.) into proper RST directives
+    processed_rst = process_rst_admonitions(rst)
+
+    # Write the processed content to the RST file
     with open(fnrst, 'w', encoding='utf-8', newline='\n') as f:
         f.write('.. vim: syntax=rst\n\n')
-        f.writelines([x + '\n' for x in rst.splitlines()])
+        f.write(processed_rst)
+        
     _write_confpy(adocx)
     _write_index(adocx)
     _write_makefile(adocx)
 
-    if 'listtable' not in args:
-        args['listtable'] = False
-    if 'untable' not in args:
-        args['untable'] = False
-    if 'reflow' not in args:
-        args['reflow'] = False
-    if 'reimg' not in args:
-        args['reimg'] = False
+    # Set default values for post-processing options
+    default_options = {
+        'listtable': False,
+        'untable': False,
+        'reflow': False,
+        'reimg': False,
+        'join': '012'
+    }
+    
+    # Update args with defaults if not provided
+    for key, default_value in default_options.items():
+        if key not in args:
+            args[key] = default_value
 
-    if 'join' not in args:
-        args['join'] = '012'
-
-    for a in 'listtable untable reflow reimg'.split():
-        if args[a]:
+    # Apply post-processing options
+    for processor in ['listtable', 'untable', 'reflow', 'reimg']:
+        if args[processor]:
             args['in_place'] = True
             args['sentence'] = True
-            if a == 'reflow':
+            if processor == 'reflow':
                 args['join'] = '0'
             args['rstfile'] = [argparse.FileType('r', encoding='utf-8')(fnrst)]
-            eval(a)(**args)
+            eval(processor)(**args)
 
     return fnrst
 
-
+''
 def docx_rst_5(docx ,rename ,sentence=True):
     '''
     Creates 5 rst files:
@@ -322,7 +419,7 @@ def docx_rst_5(docx ,rename ,sentence=True):
     reflow(rstfile=r + '_r.rst', in_place=True, sentence=sentence)
     shutil.copy2(r + '_r.rst', r + '_g.rst')
     reimg(rstfile=r + '_g.rst', in_place=True)
-
+''
 
 if __name__ == '__main__':
     main()
