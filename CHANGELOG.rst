@@ -12,6 +12,7 @@ Changes made are:
 - In the ``dcx.py`` copyright and conf.py file updated for correct reflection of project effort
 - Removed ``dcx.py`` file write feature into output folder function in ``fromdoc.py`` file.
 - Modified ``fromdoc.py`` to include admoninitons directives.
+- Modified ``fromdoc.py`` to include correct detection of code-block to convert it to respective directives.
 
 20230122 - v1.8.3
 =================
