@@ -2,10 +2,19 @@
 CHANGELOG
 =========
 
-20230122 - v1.8.3
-=================
+202508 - v1.8.4
+===============
 
 Changes made are:
+
+- In the ``fromdoc.py``, ``dcx.py``, files ``.rest`` is changed to ``.rst``
+- In the ``reimg.py`` file ``-g`` flag is updated to fix the backslash issue in the image definitions
+- In the ``dcx.py`` copyright and conf.py file updated for correct reflection of project effort
+- Removed ``dcx.py`` file write feature into output folder function in ``fromdoc.py`` file.
+- Modified ``fromdoc.py`` to include admoninitons directives.
+
+20230122 - v1.8.3
+=================
 
 .. TODO
 .. ====
