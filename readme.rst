@@ -47,3 +47,9 @@ Changes made are:
 - Removed ``dcx.py`` file write feature into output folder function in ``fromdoc.py`` file.
 - Modified ``fromdoc.py`` to include admoninitons directives.
 
+Upcoming Changes:
+
+- Multiple rsts from multiple word files
+- Multiple rsts from single word files
+- Code-Block correct detection
+
