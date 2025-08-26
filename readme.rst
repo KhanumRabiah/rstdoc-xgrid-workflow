@@ -43,13 +43,16 @@ Changes made are:
 
 - In the ``fromdoc.py``, ``dcx.py``, files ``.rest`` is changed to ``.rst``
 - In the ``reimg.py`` file ``-g`` flag is updated to fix the backslash issue in the image definitions
-- In the ``dcx.py`` copyright and conf.py file updated for correct reflection of project effort
+- In the ``dcx.py`` copyright and ``conf.py`` file updated for correct reflection of project effort
 - Removed ``dcx.py`` file write feature into output folder function in ``fromdoc.py`` file.
 - Modified ``fromdoc.py`` to include admoninitons directives.
 - Modified ``fromdoc.py`` to include correct detection of code-block to convert it to respective directives.
+- Multiple ``fromdoc.py`` to include the logic for the conversion of multiple ``.docx`` files to multiple ``.rst`` files.
 
 Upcoming Changes:
-
-- Multiple rsts from multiple word files
 - Multiple rsts from single word files
 
+Commands:
+
+1. ``rstfromdocx -lurg filename.docx`` converts a single ``.docx`` file into its respective ``.rst`` file. 
+2. ``rstfromdocx -lurg source_directory`` converts multiple ``.docx`` files present in the source directory into their respective ``.rst`` files.
