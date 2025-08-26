@@ -2,7 +2,7 @@
 CHANGELOG
 =========
 
-202508 - v1.8.4
+202508 - v1.8.3
 ===============
 
 Changes made are:
@@ -14,9 +14,6 @@ Changes made are:
 - Modified ``fromdoc.py`` to include admoninitons directives.
 - Modified ``fromdoc.py`` to include correct detection of code-block to convert it to respective directives.
 - Multiple ``fromdoc.py`` to include the logic for the conversion of multiple ``.docx`` files to multiple ``.rst`` files.
-
-20230122 - v1.8.3
-=================
 
 .. TODO
 .. ====
