@@ -56,3 +56,16 @@ Commands:
 
 1. ``rstfromdocx -lurg filename.docx`` converts a single ``.docx`` file into its respective ``.rst`` file. 
 2. ``rstfromdocx -lurg source_directory`` converts multiple ``.docx`` files present in the source directory into their respective ``.rst`` files.
+
+
+For Others Using Your Project:
+******************************
+
+When someone clones your repo, they'll do:
+
+1. ``git clone <your-repo-url>``
+2. ``cd rstdoc-xgrid-workflow``
+3. ``python -m venv venv``
+4. ``venv\Scripts\activate``
+5. ``pip install -r requirements.txt``
+6. ``pip install -e .``
