@@ -52,20 +52,21 @@ Changes made are:
 Upcoming Changes:
 - Multiple rsts from single word files
 
-Commands:
+How to use rstdoc:
+******************
 
-1. ``rstfromdocx -lurg filename.docx`` converts a single ``.docx`` file into its respective ``.rst`` file. 
-2. ``rstfromdocx -lurg source_directory`` converts multiple ``.docx`` files present in the source directory into their respective ``.rst`` files.
+Use the steps below:
 
-
-For Others Using Your Project:
-******************************
-
-When someone clones your repo, they'll do:
-
-1. ``git clone <your-repo-url>``
+1. ``git clone https://github.com/KhanumRabiah/rstdoc-xgrid-workflow.git``
 2. ``cd rstdoc-xgrid-workflow``
 3. ``python -m venv venv``
 4. ``venv\Scripts\activate``
 5. ``pip install -r requirements.txt``
 6. ``pip install -e .``
+7. Go to the directory where you want to convert the documents.
+8. Use ``rstfromdocx -lurg filename.docx`` to converts a single ``.docx`` file into its respective ``.rst`` file. 
+9. Use ``rstfromdocx -lurg source_directory`` t0 convert multiple ``.docx`` files present in the source directory into their respective ``.rst`` files.
+
+
+
+
