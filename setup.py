@@ -109,7 +109,7 @@ if __name__ == '__main__':
       install_requires=['cffi','cairocffi','cairosvg',
                         'pillow', 'pyx', 'pyfca', 'pygal',
                         'numpy', 'matplotlib','sympy','pint>=0.14','drawsvg',
-                        'svgwrite', 'stpl>=1.13.6', 'pypandoc', 'docutils',
+                        'svgwrite', 'stpl>=1.13.6', 'pypandoc', 'python-docx', 'docutils',
                         'sphinx', 'sphinx_bootstrap_theme',
                         'gitpython', 'pyyaml','txdir'],
       extras_require={'develop': ['mock', 'virtualenv', 'pytest-coverage'],

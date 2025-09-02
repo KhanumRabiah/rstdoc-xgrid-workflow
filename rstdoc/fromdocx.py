@@ -22,6 +22,7 @@ try:
     from docx import Document
     from docx.shared import Inches
     from docx.oxml.ns import qn
+    from pandoc.types import RawBlock # This import might be needed for the filter
 except ImportError:
     Document = None
     print("Warning: python-docx not installed. Code block detection will be disabled.")
@@ -91,131 +92,373 @@ def detect_code_blocks(key, value, format, meta):
     """
     Pandoc filter function to detect preformatted text in Word documents
     and convert it to proper code-block directives in RST.
+    
+    This function processes Para elements that contain preformatted text
+    (typically indented code blocks from Word) and converts them to
+    RST code-block directives.
     """
-    if key == "Para":
+    
+    if key == "Para":  # Word preformatted text might be wrapped in Para
         text = value[0].get("c", "")
-        if isinstance(text, str) and text.startswith(" "):
+        if isinstance(text, str) and text.startswith(" "):  # Detect indented text
             return RawBlock("rst", ".. code-block::\n\n    " + text.replace("\n", "\n    "))
 
 
 def detect_code_block_style(paragraph):
     """
     Detect if a paragraph represents a code block based on various indicators.
+    
+    Args:
+        paragraph: python-docx paragraph object
+        
+    Returns:
+        tuple: (is_code_block, detected_language)
     """
+    # Check paragraph style name
     style_name = paragraph.style.name.lower() if paragraph.style else ""
-    code_style_patterns = ['code', 'source', 'literal', 'monospace', 'courier', 'verbatim', 'preformatted', 'console', 'terminal']
+    
+    # Common code block style names in Word documents
+    code_style_patterns = [
+        'code', 'source', 'literal', 'monospace', 'courier',
+        'verbatim', 'preformatted', 'console', 'terminal'
+    ]
+    
+    # Check if style name contains code-related keywords
     for pattern in code_style_patterns:
         if pattern in style_name:
             return True, detect_language_from_content(paragraph.text)
-
+    
+    # Check font characteristics
     if paragraph.runs:
-        font = paragraph.runs[0].font
-        monospace_fonts = ['courier', 'consolas', 'monaco', 'menlo', 'source code pro', 'fira code', 'ubuntu mono', 'dejavu sans mono', 'liberation mono']
+        first_run = paragraph.runs[0]
+        font = first_run.font
+        
+        # Check for monospace fonts
+        monospace_fonts = [
+            'courier', 'consolas', 'monaco', 'menlo', 'source code pro',
+            'fira code', 'ubuntu mono', 'dejavu sans mono', 'liberation mono'
+        ]
+        
         font_name = font.name.lower() if font.name else ""
         for mono_font in monospace_fonts:
             if mono_font in font_name:
                 return True, detect_language_from_content(paragraph.text)
-
+    
+    # Check paragraph formatting
     paragraph_format = paragraph.paragraph_format
-    if paragraph_format and paragraph_format.left_indent and paragraph_format.left_indent.pt > 36:
-        if contains_code_patterns(paragraph.text):
-            return True, detect_language_from_content(paragraph.text)
-
+    if paragraph_format:
+        # Check for specific indentation patterns
+        if (paragraph_format.left_indent and
+            paragraph_format.left_indent.pt > 36):  # Significant indentation
+            # Additional check: does it contain code-like patterns?
+            if contains_code_patterns(paragraph.text):
+                return True, detect_language_from_content(paragraph.text)
+    
+    # Check content patterns
     if contains_code_patterns(paragraph.text):
         return True, detect_language_from_content(paragraph.text)
-
+    
     return False, None
 
 
 def contains_code_patterns(text):
     """
     Check if text contains patterns typical of code.
+    
+    Args:
+        text: string to analyze
+        
+    Returns:
+        bool: True if text appears to contain code
     """
     if not text.strip():
         return False
-    code_indicators = [r'\b(def|class|import|from|if|else|for|while|try|except|return)\b', r'\b(function|var|let|const|if|else|for|while|return)\b', r'\b(public|private|static|class|interface|import|package)\b', r'\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b', r'[{}();]', r'^\s*[#//]', r'^\s*<[^>]+>', r'\$\w+', r'^\s*\w+\s*=', r'^\s*\.', r'^\s*@\w+']
-    pattern_count = sum(1 for pattern in code_indicators if re.search(pattern, text, re.IGNORECASE | re.MULTILINE))
-    if pattern_count >= 2:
-        return True
+    
+    # Code-like patterns
+    code_indicators = [
+        r'\b(def|class|import|from|if|else|elif|for|while|try|except|return)\b',  # Python keywords
+        r'\b(function|var|let|const|if|else|for|while|return)\b',  # JavaScript keywords
+        r'\b(public|private|static|class|interface|import|package)\b',  # Java keywords
+        r'\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|CREATE|TABLE)\b',  # SQL keywords
+        r'[{}();]',  # Common programming punctuation
+        r'^\s*[#//]',  # Comments
+        r'^\s*<[^>]+>',  # HTML/XML tags
+        r'\$\w+',  # Shell variables
+        r'^\s*\w+\s*=',  # Variable assignments
+        r'^\s*\.',  # Method calls or relative paths
+        r'^\s*@\w+',  # Decorators or annotations
+    ]
+    
+    pattern_count = 0
+    for pattern in code_indicators:
+        if re.search(pattern, text, re.IGNORECASE | re.MULTILINE):
+            pattern_count += 1
+            if pattern_count >= 2:  # Multiple indicators suggest code
+                return True
+    
+    # Check for high density of special characters
     special_chars = sum(1 for c in text if c in '{}[]();,.:=<>+-*/%&|^~')
     if len(text) > 0 and special_chars / len(text) > 0.1:
         return True
+    
     return False
 
 
 def detect_language_from_content(text):
     """
     Attempt to detect programming language from code content.
+    
+    Args:
+        text: code content string
+        
+    Returns:
+        str: detected language or 'text' as default
     """
     if not text.strip():
         return 'text'
-    language_patterns = {'python': [r'\bdef\s+\w+\s*\(', r'\bimport\s+\w+', r'^\s*#'], 'javascript': [r'\bfunction\s+\w+\s*\(', r'\b(var|let|const)\s+\w+', r'console\.log'], 'java': [r'\bpublic\s+class\s+\w+', r'System\.out\.println'], 'sql': [r'\bSELECT\s+.*\bFROM\b', r'\bINSERT\s+INTO\b'], 'html': [r'<!DOCTYPE\s+html>', r'<div[^>]*>'], 'css': [r'\w+\s*\{[^}]*\}', r'#\w+\s*\{'], 'bash': [r'^#!/bin/(bash|sh)', r'\$\w+', r'\becho\s+'], 'json': [r'^\s*\{', r'"\w+"\s*:'], 'xml': [r'<\?xml\s+version', r'<\w+[^>]*>.*</\w+>']}
-    language_scores = {lang: sum(1 for p in patterns if re.search(p, text, re.IGNORECASE | re.MULTILINE)) for lang, patterns in language_patterns.items()}
-    if any(language_scores.values()):
+    
+    # Language detection patterns
+    language_patterns = {
+        'python': [
+            r'\bdef\s+\w+\s*\(',
+            r'\bimport\s+\w+',
+            r'\bfrom\s+\w+\s+import',
+            r'^\s*#.*$',
+            r'\bprint\s*\(',
+            r'\b__\w+__\b'
+        ],
+        'javascript': [
+            r'\bfunction\s+\w+\s*\(',
+            r'\b(var|let|const)\s+\w+',
+            r'\bconsole\.log\s*\(',
+            r'^\s*//.*$',
+            r'=>',
+            r'\$\{.*\}'
+        ],
+        'java': [
+            r'\bpublic\s+class\s+\w+',
+            r'\bpublic\s+static\s+void\s+main',
+            r'\bSystem\.out\.println',
+            r'\bpublic\s+\w+\s+\w+\s*\(',
+            r'\bimport\s+[\w.]+;'
+        ],
+        'sql': [
+            r'\bSELECT\s+.*\bFROM\b',
+            r'\bINSERT\s+INTO\b',
+            r'\bUPDATE\s+.*\bSET\b',
+            r'\bCREATE\s+TABLE\b',
+            r'\bDELETE\s+FROM\b'
+        ],
+        'html': [
+            r'<html[^>]*>',
+            r'<head[^>]*>',
+            r'<body[^>]*>',
+            r'<div[^>]*>',
+            r'<!DOCTYPE\s+html>'
+        ],
+        'css': [
+            r'\w+\s*\{[^}]*\}',
+            r'@media\s*\([^)]*\)',
+            r'#\w+\s*\{',
+            r'\.\w+\s*\{'
+        ],
+        'bash': [
+            r'^#!/bin/(bash|sh)',
+            r'\$\w+',
+            r'\becho\s+',
+            r'\bif\s+\[.*\];\s*then',
+            r'\|\s*\w+'
+        ],
+        'json': [
+            r'^\s*\{',
+            r'"\w+"\s*:',
+            r'^\s*\[',
+            r'}\s*,?\s*$'
+        ],
+        'xml': [
+            r'<\?xml\s+version',
+            r'<\w+[^>]*>.*</\w+>',
+            r'xmlns\s*='
+        ]
+    }
+    
+    # Count matches for each language
+    language_scores = {}
+    for language, patterns in language_patterns.items():
+        score = 0
+        for pattern in patterns:
+            if re.search(pattern, text, re.IGNORECASE | re.MULTILINE):
+                score += 1
+        if score > 0:
+            language_scores[language] = score
+    
+    # Return the language with the highest score
+    if language_scores:
         return max(language_scores, key=language_scores.get)
+    
     return 'text'
 
 
-def convert_code_block_to_rst(text, language='text'):
+def convert_code_block_to_rst(text, language=None):
     """
     Convert code text to reStructuredText format.
+    
+    Args:
+        text: code content string
+        language: detected or specified language
+        
+    Returns:
+        str: formatted reStructuredText code block
     """
+    if not language:
+        language = 'text'
+    
+    # Preserve original indentation and formatting
     lines = text.split('\n')
+    
+    # Build the rst code block
     rst_lines = [f'.. code-block:: {language}', '']
-    rst_lines.extend(f'   {line}' if line.strip() else '' for line in lines)
+    
+    # Add each line with proper indentation (3 spaces for rst)
+    for line in lines:
+        if line.strip():  # Non-empty lines
+            rst_lines.append(f'   {line}')
+        else:  # Empty lines
+            rst_lines.append('')
+    
+    # Add extra newline at the end
     rst_lines.append('')
+    
     return '\n'.join(rst_lines)
 
 
 def is_consecutive_code_block(paragraphs, start_index):
     """
     Check if consecutive paragraphs form a single code block.
+    
+    Args:
+        paragraphs: list of paragraph objects
+        start_index: starting index to check from
+        
+    Returns:
+        tuple: (end_index, combined_text, language)
     """
+    if start_index >= len(paragraphs):
+        return start_index, "", "text"
+    
     combined_lines = []
     current_language = None
-    end_index = start_index - 1
+    end_index = start_index
+    
+    # Check consecutive paragraphs
     for i in range(start_index, len(paragraphs)):
         paragraph = paragraphs[i]
         is_code, lang = detect_code_block_style(paragraph)
+        
         if is_code:
             combined_lines.append(paragraph.text)
             if not current_language and lang:
                 current_language = lang
             end_index = i
         else:
+            # Stop if we hit a non-code paragraph
             break
-    return end_index, '\n'.join(combined_lines), current_language or 'text'
+    
+    combined_text = '\n'.join(combined_lines)
+    return end_index, combined_text, current_language or 'text'
 
 
 def enhance_rst_with_code_blocks(rst_text, docx_path):
     """
     Enhanced RST processing that detects and converts code blocks from the original DOCX.
+    This function processes the DOCX file directly to detect code blocks and enhances
+    the RST output with proper code-block directives.
+    
+    Args:
+        rst_text: Original RST text from pandoc conversion
+        docx_path: Path to the original DOCX file
+        
+    Returns:
+        str: Enhanced RST text with code blocks converted to proper directives
     """
     if Document is None:
         return rst_text
     try:
+        # Load the original DOCX document
         document = Document(docx_path)
-        enhanced_rst = rst_text
-        processed_indices = set()
+        
+        # Process paragraphs to find code blocks
+        code_blocks_info = []
         i = 0
+        
         while i < len(document.paragraphs):
-            if i in processed_indices:
-                i += 1
-                continue
             paragraph = document.paragraphs[i]
-            is_code, _ = detect_code_block_style(paragraph)
+            is_code, detected_language = detect_code_block_style(paragraph)
+            
             if is_code:
+                # Check for consecutive code blocks
                 end_index, combined_text, language = is_consecutive_code_block(document.paragraphs, i)
+                
                 if combined_text.strip():
-                    rst_code_block = convert_code_block_to_rst(combined_text, language)
-                    if combined_text.strip() in enhanced_rst:
-                        enhanced_rst = enhanced_rst.replace(combined_text.strip(), rst_code_block, 1)
-                for j in range(i, end_index + 1):
-                    processed_indices.add(j)
+                    code_blocks_info.append({
+                        'text': combined_text,
+                        'language': language,
+                        'start_index': i,
+                        'end_index': end_index
+                    })
+                
+                # Skip the processed paragraphs
                 i = end_index + 1
             else:
                 i += 1
+        
+        # If no code blocks found, return original RST
+        if not code_blocks_info:
+            return rst_text
+        
+        # Enhance the RST text by replacing detected code blocks
+        enhanced_rst = rst_text
+        
+        for code_info in code_blocks_info:
+            # Find the code text in the RST and replace it with proper code-block directive
+            code_text = code_info['text'].strip()
+            language = code_info['language']
+            
+            # Create the proper RST code block
+            rst_code_block = convert_code_block_to_rst(code_text, language)
+            
+            # Try to find and replace the code in the RST text
+            # This is a heuristic approach - we look for the code text and replace it
+            if code_text in enhanced_rst:
+                enhanced_rst = enhanced_rst.replace(code_text, rst_code_block, 1)
+            else:
+                # If exact match fails, try to find similar patterns
+                lines = code_text.split('\n')
+                if lines:
+                    first_line = lines[0].strip()
+                    if first_line and first_line in enhanced_rst:
+                        # Find the block and replace it
+                        rst_lines = enhanced_rst.split('\n')
+                        for j, rst_line in enumerate(rst_lines):
+                            if first_line in rst_line:
+                                # Try to identify the full code block in RST
+                                block_start = j
+                                block_end = j
+                                
+                                # Look for the end of the code block
+                                for k in range(j + 1, len(rst_lines)):
+                                    if rst_lines[k].strip() == '' or not rst_lines[k].startswith('   '):
+                                        break
+                                    block_end = k
+                                
+                                # Replace the identified block
+                                rst_block_lines = rst_code_block.split('\n')
+                                rst_lines[block_start:block_end + 1] = rst_block_lines
+                                enhanced_rst = '\n'.join(rst_lines)
+                                break
+        
         return enhanced_rst
+        
     except Exception as e:
         print(f"Warning: Could not enhance code blocks from DOCX: {e}")
         return rst_text
