@@ -41,13 +41,13 @@ Notes
 
 Changes made are:
 
-- In the ``fromdoc.py``, ``dcx.py``, files ``.rest`` is changed to ``.rst``
+- In the ``fromdocx.py``, ``dcx.py``, files ``.rest`` is changed to ``.rst``
 - In the ``reimg.py`` file ``-g`` flag is updated to fix the backslash issue in the image definitions
 - In the ``dcx.py`` copyright and ``conf.py`` file updated for correct reflection of project effort
 - Removed ``dcx.py`` file write feature into output folder function in ``fromdoc.py`` file.
-- Modified ``fromdoc.py`` to include admoninitons directives.
-- Modified ``fromdoc.py`` to include correct detection of code-block to convert it to respective directives.
-- Multiple ``fromdoc.py`` to include the logic for the conversion of multiple ``.docx`` files to multiple ``.rst`` files.
+- Modified ``fromdocx.py`` to include admonition directives.
+- Modified ``fromdocx.py`` to include correct detection of code-block to convert it to respective directives.
+- Modified ``fromdocx.py`` to include the logic for the conversion of multiple ``.docx`` files to multiple ``.rst`` files and then their build using sphinx documentation generator.
 
 Upcoming Changes:
 - Multiple rsts from single word files
@@ -65,7 +65,7 @@ Use the steps below:
 6. ``pip install -e .``
 7. Go to the directory where you want to convert the documents.
 8. Use ``rstfromdocx -lurg filename.docx`` to converts a single ``.docx`` file into its respective ``.rst`` file. 
-9. Use ``rstfromdocx -lurg source_directory`` t0 convert multiple ``.docx`` files present in the source directory into their respective ``.rst`` files.
+9. Use ``rstfromdocx -lurg source_directory`` t0 convert multiple ``.docx`` files present in the source directory into their respective ``.rst`` files and then build them using sphinx.
 
 
 
